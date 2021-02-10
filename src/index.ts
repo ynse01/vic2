@@ -11,8 +11,10 @@ const vsSource = `
 
 // Pixel shader
 const psSource = `
+    uniform lowp vec3 backgroundColor;
+        
     void main() {
-        gl_FragColor = vec4(${ColorPalette.colorToString(ColorPalette.blue)}, 1.0);
+        gl_FragColor = vec4(backgroundColor, 1.0);
     }
 `;
 console.log(psSource);
@@ -60,7 +62,7 @@ function loadShader(gl: WebGLRenderingContext, type: number, source: string): We
     return null;
 }
 
-function initBuffers(gl: WebGLRenderingContext): {position: WebGLBuffer}| null {
+function initBuffers(gl: WebGLRenderingContext): IBuffers| null {
     // Create a buffer for the square's positions.
     const positionBuffer = gl.createBuffer();
     if (positionBuffer != null) {
@@ -83,8 +85,13 @@ function initBuffers(gl: WebGLRenderingContext): {position: WebGLBuffer}| null {
             new Float32Array(positions),
             gl.STATIC_DRAW
         );
+        const backgroundColor = [];
+        backgroundColor.push(ColorPalette.blue[0] / 256);
+        backgroundColor.push(ColorPalette.blue[1] / 256);
+        backgroundColor.push(ColorPalette.blue[2] / 256);
         return {
             position: positionBuffer,
+            backgroundColor: backgroundColor
         };
     }
     return null;
@@ -93,11 +100,17 @@ function initBuffers(gl: WebGLRenderingContext): {position: WebGLBuffer}| null {
 interface IProgramInfo {
     program: WebGLShader,
     attribLocations: {
-        vertexPosition: number
+        vertexPosition: number,
+        backgroundColor: number
     }
 }
 
-function drawScene(gl: WebGLRenderingContext, programInfo: IProgramInfo, buffers: { position: WebGLBuffer}): void {
+interface IBuffers {
+    position: WebGLBuffer,
+    backgroundColor: number[]
+}
+
+function drawScene(gl: WebGLRenderingContext, programInfo: IProgramInfo, buffers: IBuffers): void {
     const bgColor = ColorPalette.lightBlue;
     gl.clearColor(bgColor[0] / 256, bgColor[1] / 256, bgColor[2] / 256, 1.0);
     gl.clearDepth(1.0);                 // Clear everything
@@ -130,6 +143,12 @@ function drawScene(gl: WebGLRenderingContext, programInfo: IProgramInfo, buffers
     // Tell WebGL to use our program when drawing
     gl.useProgram(programInfo.program);
     {
+        const backgoundLoc = gl.getUniformLocation(programInfo.program, "backgroundColor");
+        if (backgoundLoc != null) {
+            gl.uniform3fv(backgoundLoc, buffers.backgroundColor);
+        }
+    }
+    {
         const offset = 0;
         const vertexCount = 4;
         gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount);
@@ -150,6 +169,7 @@ function main() {
                 program: shaderProgram,
                 attribLocations: {
                     vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
+                    backgroundColor: gl.getAttribLocation(shaderProgram, 'backgroundColor')
                 },
             };   
             // Here's where we call the routine that builds all the
