@@ -1,0 +1,32 @@
+{
+  "name": "vic2",
+  "version": "1.0.0",
+  "description": "Emulator for the VIC-II graphics processor",
+  "main": "main.js",
+  "scripts": {
+    "build": "webpack",
+    "test": "node node_modules/karma/bin/karma start karma.conf.js",
+    "lint": "node node_modules/eslint/bin/eslint.js . --ext .ts"
+  },
+  "author": "Ynse Hoornenborg",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jasmine": "^3.6.3",
+    "@typescript-eslint/eslint-plugin": "^4.15.0",
+    "@typescript-eslint/parser": "^4.15.0",
+    "eslint": "^7.19.0",
+    "eslint-webpack-plugin": "^2.5.0",
+    "http-server": "^0.12.3",
+    "jasmine": "^3.6.4",
+    "karma": "^6.1.0",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-jasmine": "^4.0.1",
+    "karma-sourcemap-loader": "^0.3.8",
+    "karma-spec-reporter": "0.0.32",
+    "karma-webpack": "^5.0.0",
+    "ts-loader": "^8.0.17",
+    "typescript": "^4.1.4",
+    "webpack": "^5.21.2",
+    "webpack-cli": "^4.5.0"
+  }
+}
