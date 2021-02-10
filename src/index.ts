@@ -1,28 +1,4 @@
-// C64 color palette
-const colorBlack = [0.0, 0.0, 0.0];
-const colorWhite = [1.0, 1.0, 1.0];
-const colorRed = [0.53125, 0.0, 0.0];
-const colorCyan = [0.6640625, 1.0, 0.929679];
-const colorViolet = [0.796875, 0.265625, 0.796875];
-const colorGreen = [0.0, 0.796875, 0.33203125];
-const colorBlue = [72, 58, 170];
-const colorYellow = [0.0, 0.0, 0,0];
-const colorOrange = [0.0, 0.0, 0,0];
-const colorBrown = [0.0, 0.0, 0,0];
-const colorLightRed = [0.0, 0.0, 0,0];
-const colorDarkGrey = [0.0, 0.0, 0,0];
-const colorGrey = [0.0, 0.0, 0,0];
-const colorLightGreen = [0.0, 0.0, 0,0];
-const colorLightBlue = [134, 122, 222];
-const colorLightGrey = [0.0, 0.0, 0,0];
-
-function colorToString(color: number[]): string {
-    const str = 
-        (color[0] / 256).toPrecision(4) + "," +
-        (color[1] / 256).toPrecision(4) + "," +
-        (color[2] / 256).toPrecision(4);
-    return str;
-}
+import { ColorPalette } from "./colors";
 
 // Vertex shader
 const vsSource = `
@@ -36,10 +12,10 @@ const vsSource = `
 // Pixel shader
 const psSource = `
     void main() {
-        gl_FragColor = vec4(${colorToString(colorBlue)}, 1.0);
+        gl_FragColor = vec4(${ColorPalette.colorToString(ColorPalette.blue)}, 1.0);
     }
 `;
-
+console.log(psSource);
 //
 // Initialize a shader program, so WebGL knows how to draw our data
 //
@@ -122,7 +98,8 @@ interface IProgramInfo {
 }
 
 function drawScene(gl: WebGLRenderingContext, programInfo: IProgramInfo, buffers: { position: WebGLBuffer}): void {
-    gl.clearColor(colorLightBlue[0] / 256, colorLightBlue[1] / 256, colorLightBlue[2] / 256, 1.0);  // Clear to black, fully opaque
+    const bgColor = ColorPalette.lightBlue;
+    gl.clearColor(bgColor[0] / 256, bgColor[1] / 256, bgColor[2] / 256, 1.0);
     gl.clearDepth(1.0);                 // Clear everything
     gl.enable(gl.DEPTH_TEST);           // Enable depth testing
     gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
