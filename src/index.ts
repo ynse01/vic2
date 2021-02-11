@@ -1,20 +1,27 @@
-import { ColorPalette } from "./colors";
+import { ColorPalette } from "./color-palette";
 
 // Vertex shader
 const vsSource = `
     attribute vec4 aVertexPosition;
+    attribute vec2 aTextureCoord;
+
+    varying highp vec2 vTextureCoord;
 
     void main() {
         gl_Position = aVertexPosition;
+        vTextureCoord = aTextureCoord;
     }
 `;
 
 // Pixel shader
 const psSource = `
-    uniform lowp vec3 backgroundColor;
+    varying highp vec2 vTextureCoord;
+
+    uniform sampler2D uSampler;
+    uniform lowp vec3 uBackgroundColor;
         
     void main() {
-        gl_FragColor = vec4(backgroundColor, 1.0);
+        gl_FragColor = texture2D(uSampler, vTextureCoord);
     }
 `;
 console.log(psSource);
@@ -76,41 +83,89 @@ function initBuffers(gl: WebGLRenderingContext): IBuffers| null {
             -0.8, -0.7,
             0.8, -0.7,
         ];
-        // Now pass the list of positions into WebGL to build the
-        // shape. We do this by creating a Float32Array from the
-        // JavaScript array, then use it to fill the current buffer.
-
+        // Load the fragment shader uniform for the text colors.
         gl.bufferData(
             gl.ARRAY_BUFFER,
             new Float32Array(positions),
             gl.STATIC_DRAW
         );
-        const backgroundColor = [];
-        backgroundColor.push(ColorPalette.blue[0] / 256);
-        backgroundColor.push(ColorPalette.blue[1] / 256);
-        backgroundColor.push(ColorPalette.blue[2] / 256);
-        return {
-            position: positionBuffer,
-            backgroundColor: backgroundColor
-        };
+        // Load the texture coordinates.
+        const textureCoordBuffer = gl.createBuffer();
+        if (textureCoordBuffer != null) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
+            const textureCoordinates = [
+                0.0, 0.0, 
+                1.0, 0.0,
+                1.0, 1.0, 
+                0.0, 1.0
+            ];
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
+            const backgroundColor = [];
+            backgroundColor.push(ColorPalette.blue[0] / 256);
+            backgroundColor.push(ColorPalette.blue[1] / 256);
+            backgroundColor.push(ColorPalette.blue[2] / 256);
+            return {
+                position: positionBuffer,
+                backgroundColor: backgroundColor,
+                textureCoord: textureCoordBuffer
+            };
+        }
     }
     return null;
+}
+
+function loadTexture(gl: WebGLRenderingContext, url: string): WebGLTexture | null {
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    // Because images have to be downloaded over the internet
+    // they might take a moment until they are ready.
+    // Until then put a single pixel in the texture so we can
+    // use it immediately. When the image has finished downloading
+    // we'll update the texture with the contents of the image.
+    const level = 0;
+    const internalFormat = gl.RGBA;
+    const width = 1;
+    const height = 1;
+    const border = 0;
+    const srcFormat = gl.RGBA;
+    const srcType = gl.UNSIGNED_BYTE;
+    const pixel = new Uint8Array([0, 0, 255, 255]);  // opaque blue
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, 
+        width, height, border, srcFormat, srcType, pixel);
+
+    const image = new Image();
+    image.onload = function() {
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image);
+        // Assume texture is not power of 2
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    };
+    image.src = url;
+
+    return texture;
 }
 
 interface IProgramInfo {
     program: WebGLShader,
     attribLocations: {
         vertexPosition: number,
-        backgroundColor: number
+        textureCoord: number
+    },
+    uniformLocations: {
+        sampler: WebGLUniformLocation,
+        backgroundColor: WebGLUniformLocation
     }
 }
 
 interface IBuffers {
     position: WebGLBuffer,
-    backgroundColor: number[]
+    backgroundColor: number[],
+    textureCoord: WebGLBuffer
 }
 
-function drawScene(gl: WebGLRenderingContext, programInfo: IProgramInfo, buffers: IBuffers): void {
+function drawScene(gl: WebGLRenderingContext, programInfo: IProgramInfo, buffers: IBuffers, texture: WebGLTexture): void {
     const bgColor = ColorPalette.lightBlue;
     gl.clearColor(bgColor[0] / 256, bgColor[1] / 256, bgColor[2] / 256, 1.0);
     gl.clearDepth(1.0);                 // Clear everything
@@ -140,14 +195,31 @@ function drawScene(gl: WebGLRenderingContext, programInfo: IProgramInfo, buffers
             programInfo.attribLocations.vertexPosition
         );
     }
+    // Tell WebGL how to pull out the texture coordinates from
+    // the texture coordinate buffer into the textureCoord attribute.
+    {
+        const numComponents = 2;
+        const type = gl.FLOAT;
+        const normalize = false;
+        const stride = 0;
+        const offset = 0;
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.textureCoord);
+        gl.vertexAttribPointer(
+            programInfo.attribLocations.textureCoord,
+            numComponents,
+            type,
+            normalize,
+            stride,
+            offset);
+        gl.enableVertexAttribArray(
+            programInfo.attribLocations.textureCoord);
+    }
     // Tell WebGL to use our program when drawing
     gl.useProgram(programInfo.program);
-    {
-        const backgoundLoc = gl.getUniformLocation(programInfo.program, "backgroundColor");
-        if (backgoundLoc != null) {
-            gl.uniform3fv(backgoundLoc, buffers.backgroundColor);
-        }
-    }
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.uniform1i(programInfo.uniformLocations.sampler, 0);
+    gl.uniform3fv(programInfo.uniformLocations.backgroundColor, buffers.backgroundColor);
     {
         const offset = 0;
         const vertexCount = 4;
@@ -169,15 +241,23 @@ function main() {
                 program: shaderProgram,
                 attribLocations: {
                     vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-                    backgroundColor: gl.getAttribLocation(shaderProgram, 'backgroundColor')
+                    textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord')
                 },
-            };   
-            // Here's where we call the routine that builds all the
-            // objects we'll be drawing.
-            const buffers = initBuffers(gl);
-            if (buffers != null) {
-                // Draw the scene
-                drawScene(gl, programInfo, buffers);
+                uniformLocations: {
+                    backgroundColor: gl.getUniformLocation(shaderProgram, 'uBackgroundColor')!,
+                    sampler: gl.getUniformLocation(shaderProgram, 'uSampler')!,
+                }
+            };
+            // Load the texture
+            const texture = loadTexture(gl, 'cubetexture.png');
+            if (texture != null) {
+                // Here's where we call the routine that builds all the
+                // objects we'll be drawing.
+                const buffers = initBuffers(gl);
+                if (buffers != null) {
+                    // Draw the scene
+                    drawScene(gl, programInfo, buffers, texture);
+                }
             }
         }
     }
