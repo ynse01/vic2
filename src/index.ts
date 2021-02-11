@@ -19,13 +19,17 @@ const vsSource = `
 
 // Pixel shader
 const psSource = `
+    precision highp float;
+
     varying highp vec2 vTextureCoord;
 
     uniform sampler2D uSampler;
     uniform lowp vec3 uBackgroundColor;
         
     void main() {
-        gl_FragColor = texture2D(uSampler, vTextureCoord);
+        vec4 textureColor = texture2D(uSampler, vTextureCoord);
+        vec3 max1 = min(uBackgroundColor, textureColor.rgb);
+        gl_FragColor = vec4(max1, 1.0);
     }
 `;
 console.log(psSource);
@@ -128,9 +132,9 @@ function main() {
 
         const shaderProgram = initShaderProgram(gl, vsSource, psSource);
         if (shaderProgram != null) {
-            //const backgroundColor = gl.getUniformLocation(shaderProgram, 'uBackgroundColor');
+            const backgroundColor = gl.getUniformLocation(shaderProgram, 'uBackgroundColor');
             const sampler = gl.getUniformLocation(shaderProgram, 'uSampler');
-            if (/*backgroundColor != null &&*/ sampler != null) {
+            if (backgroundColor != null && sampler != null) {
                 const programInfo: IProgramInfo = {
                     program: shaderProgram,
                     attribLocations: {
@@ -138,7 +142,7 @@ function main() {
                         textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord')
                     },
                     uniformLocations: {
-                        backgroundColor: sampler,
+                        backgroundColor: backgroundColor,
                         sampler: sampler
                     }
                 };
