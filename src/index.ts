@@ -104,8 +104,8 @@ function initBuffers(gl: WebGLRenderingContext): IBuffers| null {
             const textureCoordinates = [
                 0.0, 0.0, 
                 1.0, 0.0,
-                1.0, 1.0, 
-                0.0, 1.0
+                0.0, 1.0, 
+                1.0, 1.0
             ];
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
             const backgroundColor = [];
