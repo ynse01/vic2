@@ -128,27 +128,31 @@ function main() {
 
         const shaderProgram = initShaderProgram(gl, vsSource, psSource);
         if (shaderProgram != null) {
-            const programInfo: IProgramInfo = {
-                program: shaderProgram,
-                attribLocations: {
-                    vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-                    textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord')
-                },
-                uniformLocations: {
-                    backgroundColor: gl.getUniformLocation(shaderProgram, 'uBackgroundColor')!,
-                    sampler: gl.getUniformLocation(shaderProgram, 'uSampler')!,
-                }
-            };
-            // Load the texture
-            const loader = new TextureLoader(gl, 'cubetexture.png');
-            if (loader.texture != null) {
-                // Here's where we call the routine that builds all the
-                // objects we'll be drawing.
-                const buffers = initBuffers(gl);
-                if (buffers != null) {
-                    // Draw the scene
-                    const renderer = new Renderer(gl, programInfo, buffers, loader.texture);
-                    renderer.renderLoop();
+            //const backgroundColor = gl.getUniformLocation(shaderProgram, 'uBackgroundColor');
+            const sampler = gl.getUniformLocation(shaderProgram, 'uSampler');
+            if (/*backgroundColor != null &&*/ sampler != null) {
+                const programInfo: IProgramInfo = {
+                    program: shaderProgram,
+                    attribLocations: {
+                        vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
+                        textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord')
+                    },
+                    uniformLocations: {
+                        backgroundColor: sampler,
+                        sampler: sampler
+                    }
+                };
+                // Load the texture
+                const loader = new TextureLoader(gl, 'cubetexture.png');
+                if (loader.texture != null) {
+                    // Here's where we call the routine that builds all the
+                    // objects we'll be drawing.
+                    const buffers = initBuffers(gl);
+                    if (buffers != null) {
+                        // Draw the scene
+                        const renderer = new Renderer(gl, programInfo, buffers, loader.texture);
+                        renderer.renderLoop();
+                    }
                 }
             }
         }

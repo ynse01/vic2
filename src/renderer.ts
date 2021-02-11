@@ -15,7 +15,7 @@ export class Renderer {
         this.texture = texture;
     }
 
-    public renderLoop() {
+    public renderLoop(): void {
         const gl = this.gl;
         const bgColor = ColorPalette.lightBlue;
         gl.clearColor(bgColor[0] / 256, bgColor[1] / 256, bgColor[2] / 256, 1.0);
