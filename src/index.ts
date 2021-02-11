@@ -1,4 +1,7 @@
 import { ColorPalette } from "./color-palette";
+import { IBuffers } from "./i-buffers";
+import { IProgramInfo } from "./i-program-info";
+import { Renderer } from "./renderer";
 
 // Vertex shader
 const vsSource = `
@@ -147,24 +150,6 @@ function loadTexture(gl: WebGLRenderingContext, url: string): WebGLTexture | nul
     return texture;
 }
 
-interface IProgramInfo {
-    program: WebGLShader,
-    attribLocations: {
-        vertexPosition: number,
-        textureCoord: number
-    },
-    uniformLocations: {
-        sampler: WebGLUniformLocation,
-        backgroundColor: WebGLUniformLocation
-    }
-}
-
-interface IBuffers {
-    position: WebGLBuffer,
-    backgroundColor: number[],
-    textureCoord: WebGLBuffer
-}
-
 function drawScene(gl: WebGLRenderingContext, programInfo: IProgramInfo, buffers: IBuffers, texture: WebGLTexture): void {
     const bgColor = ColorPalette.lightBlue;
     gl.clearColor(bgColor[0] / 256, bgColor[1] / 256, bgColor[2] / 256, 1.0);
@@ -256,7 +241,8 @@ function main() {
                 const buffers = initBuffers(gl);
                 if (buffers != null) {
                     // Draw the scene
-                    drawScene(gl, programInfo, buffers, texture);
+                    const renderer = new Renderer(gl, programInfo, buffers, texture);
+                    renderer.renderLoop();
                 }
             }
         }
