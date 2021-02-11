@@ -1,4 +1,5 @@
 import { ColorPalette } from "./color-palette";
+import { DataLoader } from "./data-loader";
 import { IBuffers } from "./i-buffers";
 import { IProgramInfo } from "./i-program-info";
 import { Renderer } from "./renderer";
@@ -27,9 +28,12 @@ const psSource = `
     uniform lowp vec3 uBackgroundColor;
         
     void main() {
+        vec2 bounds = vec2(320, 200);
+        vec2 charIndex = floor(vTextureCoord * bounds);
+        vec2 pixelIndex = mod(vTextureCoord * bounds, 8.0) * 8.0;
         vec4 textureColor = texture2D(uSampler, vTextureCoord);
-        vec3 max1 = min(uBackgroundColor, textureColor.rgb);
-        gl_FragColor = vec4(max1, 1.0);
+        vec3 max1 = max(uBackgroundColor, textureColor.rgb);
+        gl_FragColor = vec4(pixelIndex.rg / 255.0, max1.b, 1.0);
     }
 `;
 console.log(psSource);
@@ -147,7 +151,7 @@ function main() {
                     }
                 };
                 // Load the texture
-                const loader = new TextureLoader(gl, 'cubetexture.png');
+                const loader = new DataLoader(gl, 'media/characters-c64.bin');
                 if (loader.texture != null) {
                     // Here's where we call the routine that builds all the
                     // objects we'll be drawing.
