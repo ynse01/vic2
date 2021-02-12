@@ -34,58 +34,59 @@ const psSource = `
         // Char texture has single character on 1 row (8 bytes). And 256 rows in total.
         vec2 charTextureCoord = vec2(pixelIndex.y, charIndex.x / 40.0);
         vec4 textureColor = texture2D(uSampler, charTextureCoord);
-        float bit = floor(pixelIndex.x * 8.0);
-        if (bit == 0.0) {
-            if (mod(textureColor.r, 0.0078125) > 0.0) {
-                gl_FragColor = vec4(uForegroundColor, 1.0);
-            } else {
-                gl_FragColor = vec4(uBackgroundColor, 1.0);
-            }
-        }
-        if (bit == 1.0) {
-            if (mod(textureColor.r, 0.016525) > 0.0078125) {
-                gl_FragColor = vec4(uForegroundColor, 1.0);
-            } else {
-                gl_FragColor = vec4(uBackgroundColor, 1.0);
-            }
-        }
-        if (bit == 2.0) {
-            if (mod(textureColor.r, 0.03125) > 0.015625) {
-                gl_FragColor = vec4(uForegroundColor, 1.0);
-            } else {
-                gl_FragColor = vec4(uBackgroundColor, 1.0);
-            }
-        }
-        if (bit == 3.0) {
-            if (mod(textureColor.r, 0.0625) > 0.03125) {
-                gl_FragColor = vec4(uForegroundColor, 1.0);
-            } else {
-                gl_FragColor = vec4(uBackgroundColor, 1.0);
-            }
-        }
-        if (bit == 4.0) {
-            if (mod(textureColor.r, 0.125) > 0.0625) {
-                gl_FragColor = vec4(uForegroundColor, 1.0);
-            } else {
-                gl_FragColor = vec4(uBackgroundColor, 1.0);
-            }
-        }
-        if (bit == 5.0) {
-            if (mod(textureColor.r, 0.25) > 0.125) {
+        float byte = textureColor.r * 255.0;
+        float bit = floor(pixelIndex.x * 255.0 / 32.0);
+        if (bit == 7.0) {
+            if (mod(byte, 2.0) >= 1.0) {
                 gl_FragColor = vec4(uForegroundColor, 1.0);
             } else {
                 gl_FragColor = vec4(uBackgroundColor, 1.0);
             }
         }
         if (bit == 6.0) {
-            if (mod(textureColor.r, 0.5) > 0.25) {
+            if (mod(byte, 4.0) >= 2.0) {
                 gl_FragColor = vec4(uForegroundColor, 1.0);
             } else {
                 gl_FragColor = vec4(uBackgroundColor, 1.0);
             }
         }
-        if (bit == 7.0) {
-            if (textureColor.r > 0.5) {
+        if (bit == 5.0) {
+            if (mod(byte, 8.0) >= 4.0) {
+                gl_FragColor = vec4(uForegroundColor, 1.0);
+            } else {
+                gl_FragColor = vec4(uBackgroundColor, 1.0);
+            }
+        }
+        if (bit == 4.0) {
+            if (mod(byte, 16.0) >= 8.0) {
+                gl_FragColor = vec4(uForegroundColor, 1.0);
+            } else {
+                gl_FragColor = vec4(uBackgroundColor, 1.0);
+            }
+        }
+        if (bit == 3.0) {
+            if (mod(byte, 32.0) >= 16.0) {
+                gl_FragColor = vec4(uForegroundColor, 1.0);
+            } else {
+                gl_FragColor = vec4(uBackgroundColor, 1.0);
+            }
+        }
+        if (bit == 2.0) {
+            if (mod(byte , 64.0) >= 32.0) {
+                gl_FragColor = vec4(uForegroundColor, 1.0);
+            } else {
+                gl_FragColor = vec4(uBackgroundColor, 1.0);
+            }
+        }
+        if (bit == 1.0) {
+            if (mod(byte, 128.0) >= 64.0) {
+                gl_FragColor = vec4(uForegroundColor, 1.0);
+            } else {
+                gl_FragColor = vec4(uBackgroundColor, 1.0);
+            }
+        }
+        if (bit == 0.0) {
+            if (byte >= 128.0) {
                 gl_FragColor = vec4(uForegroundColor, 1.0);
             } else {
                 gl_FragColor = vec4(uBackgroundColor, 1.0);
@@ -93,7 +94,7 @@ const psSource = `
         }
     }
 `;
-console.log(psSource);
+
 //
 // Initialize a shader program, so WebGL knows how to draw our data
 //
