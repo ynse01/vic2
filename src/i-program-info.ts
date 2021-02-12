@@ -6,6 +6,7 @@ export interface IProgramInfo {
     },
     uniformLocations: {
         sampler: WebGLUniformLocation,
+        foregroundColor: WebGLUniformLocation,
         backgroundColor: WebGLUniformLocation
     }
 }

@@ -3,7 +3,6 @@ import { DataLoader } from "./data-loader";
 import { IBuffers } from "./i-buffers";
 import { IProgramInfo } from "./i-program-info";
 import { Renderer } from "./renderer";
-import { TextureLoader } from "./texture-loader";
 
 // Vertex shader
 const vsSource = `
@@ -26,14 +25,22 @@ const psSource = `
 
     uniform sampler2D uSampler;
     uniform lowp vec3 uBackgroundColor;
+    uniform lowp vec3 uForegroundColor;
         
     void main() {
-        vec2 bounds = vec2(320, 200);
+        vec2 bounds = vec2(40, 25);
         vec2 charIndex = floor(vTextureCoord * bounds);
-        vec2 pixelIndex = mod(vTextureCoord * bounds, 8.0) * 8.0;
-        vec4 textureColor = texture2D(uSampler, vTextureCoord);
-        vec3 max1 = max(uBackgroundColor, textureColor.rgb);
-        gl_FragColor = vec4(pixelIndex.rg / 255.0, max1.b, 1.0);
+        vec2 pixelIndex = mod(vTextureCoord * bounds, 1.0);
+        vec2 charTextureCoord = vec2(pixelIndex.y, charIndex.x / 40.0);
+        vec4 textureColor = texture2D(uSampler, charTextureCoord);
+        // TODO: Change bit based on pixelIndex.x
+        if (textureColor.r > 0.5) {
+            gl_FragColor = vec4(uForegroundColor, 1.0);
+        } else {
+            gl_FragColor = vec4(uBackgroundColor, 1.0);
+        }
+        //vec3 max1 = max(uBackgroundColor, textureColor.rgb);
+        //gl_FragColor = vec4(textureColor.rgb, 1.0);
     }
 `;
 console.log(psSource);
@@ -112,12 +119,17 @@ function initBuffers(gl: WebGLRenderingContext): IBuffers| null {
                 1.0, 1.0
             ];
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
+            const foregroundColor = [];
+            foregroundColor.push(ColorPalette.lightBlue[0] / 256);
+            foregroundColor.push(ColorPalette.lightBlue[1] / 256);
+            foregroundColor.push(ColorPalette.lightBlue[2] / 256);
             const backgroundColor = [];
             backgroundColor.push(ColorPalette.blue[0] / 256);
             backgroundColor.push(ColorPalette.blue[1] / 256);
             backgroundColor.push(ColorPalette.blue[2] / 256);
             return {
                 position: positionBuffer,
+                foregroundColor: foregroundColor,
                 backgroundColor: backgroundColor,
                 textureCoord: textureCoordBuffer
             };
@@ -136,9 +148,10 @@ function main() {
 
         const shaderProgram = initShaderProgram(gl, vsSource, psSource);
         if (shaderProgram != null) {
+            const foregroundColor = gl.getUniformLocation(shaderProgram, 'uForegroundColor');
             const backgroundColor = gl.getUniformLocation(shaderProgram, 'uBackgroundColor');
             const sampler = gl.getUniformLocation(shaderProgram, 'uSampler');
-            if (backgroundColor != null && sampler != null) {
+            if (foregroundColor != null && backgroundColor != null && sampler != null) {
                 const programInfo: IProgramInfo = {
                     program: shaderProgram,
                     attribLocations: {
@@ -146,6 +159,7 @@ function main() {
                         textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord')
                     },
                     uniformLocations: {
+                        foregroundColor: foregroundColor,
                         backgroundColor: backgroundColor,
                         sampler: sampler
                     }

@@ -70,6 +70,7 @@ export class Renderer {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.uniform1i(this.programInfo.uniformLocations.sampler, 0);
+        gl.uniform3fv(this.programInfo.uniformLocations.foregroundColor, this.buffers.foregroundColor);
         gl.uniform3fv(this.programInfo.uniformLocations.backgroundColor, this.buffers.backgroundColor);
         {
             const offset = 0;
