@@ -31,16 +31,66 @@ const psSource = `
         vec2 bounds = vec2(40, 25);
         vec2 charIndex = floor(vTextureCoord * bounds);
         vec2 pixelIndex = mod(vTextureCoord * bounds, 1.0);
+        // Char texture has single character on 1 row (8 bytes). And 256 rows in total.
         vec2 charTextureCoord = vec2(pixelIndex.y, charIndex.x / 40.0);
         vec4 textureColor = texture2D(uSampler, charTextureCoord);
-        // TODO: Change bit based on pixelIndex.x
-        if (textureColor.r > 0.5) {
-            gl_FragColor = vec4(uForegroundColor, 1.0);
-        } else {
-            gl_FragColor = vec4(uBackgroundColor, 1.0);
+        float bit = floor(pixelIndex.x * 8.0);
+        if (bit == 0.0) {
+            if (mod(textureColor.r, 0.0078125) > 0.0) {
+                gl_FragColor = vec4(uForegroundColor, 1.0);
+            } else {
+                gl_FragColor = vec4(uBackgroundColor, 1.0);
+            }
         }
-        //vec3 max1 = max(uBackgroundColor, textureColor.rgb);
-        //gl_FragColor = vec4(textureColor.rgb, 1.0);
+        if (bit == 1.0) {
+            if (mod(textureColor.r, 0.016525) > 0.0078125) {
+                gl_FragColor = vec4(uForegroundColor, 1.0);
+            } else {
+                gl_FragColor = vec4(uBackgroundColor, 1.0);
+            }
+        }
+        if (bit == 2.0) {
+            if (mod(textureColor.r, 0.03125) > 0.015625) {
+                gl_FragColor = vec4(uForegroundColor, 1.0);
+            } else {
+                gl_FragColor = vec4(uBackgroundColor, 1.0);
+            }
+        }
+        if (bit == 3.0) {
+            if (mod(textureColor.r, 0.0625) > 0.03125) {
+                gl_FragColor = vec4(uForegroundColor, 1.0);
+            } else {
+                gl_FragColor = vec4(uBackgroundColor, 1.0);
+            }
+        }
+        if (bit == 4.0) {
+            if (mod(textureColor.r, 0.125) > 0.0625) {
+                gl_FragColor = vec4(uForegroundColor, 1.0);
+            } else {
+                gl_FragColor = vec4(uBackgroundColor, 1.0);
+            }
+        }
+        if (bit == 5.0) {
+            if (mod(textureColor.r, 0.25) > 0.125) {
+                gl_FragColor = vec4(uForegroundColor, 1.0);
+            } else {
+                gl_FragColor = vec4(uBackgroundColor, 1.0);
+            }
+        }
+        if (bit == 6.0) {
+            if (mod(textureColor.r, 0.5) > 0.25) {
+                gl_FragColor = vec4(uForegroundColor, 1.0);
+            } else {
+                gl_FragColor = vec4(uBackgroundColor, 1.0);
+            }
+        }
+        if (bit == 7.0) {
+            if (textureColor.r > 0.5) {
+                gl_FragColor = vec4(uForegroundColor, 1.0);
+            } else {
+                gl_FragColor = vec4(uBackgroundColor, 1.0);
+            }
+        }
     }
 `;
 console.log(psSource);
