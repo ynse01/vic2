@@ -28,14 +28,13 @@ const psSource = `
     uniform lowp vec3 uForegroundColor;
         
     void main() {
-        vec2 bounds = vec2(40, 25);
-        vec2 charIndex = floor(vTextureCoord * bounds);
-        vec2 pixelIndex = mod(vTextureCoord * bounds, 1.0);
+        vec2 charIndex = floor(vTextureCoord);
+        vec2 pixelIndex = mod(vTextureCoord, 1.0) * 8.0;
         // Char texture has single character on 1 row (8 bytes). And 256 rows in total.
-        vec2 charTextureCoord = vec2(pixelIndex.y, charIndex.x / 40.0);
+        vec2 charTextureCoord = vec2((pixelIndex.y + 0.5) / 8.0, (charIndex.x + 0.5) / 40.0);
         vec4 textureColor = texture2D(uSampler, charTextureCoord);
-        float byte = textureColor.r * 255.0;
-        float bit = floor(pixelIndex.x * 255.0 / 32.0);
+        float byte = textureColor.r * 256.0;
+        float bit = floor(pixelIndex.x);
         if (bit == 7.0) {
             if (mod(byte, 2.0) >= 1.0) {
                 gl_FragColor = vec4(uForegroundColor, 1.0);
@@ -165,9 +164,9 @@ function initBuffers(gl: WebGLRenderingContext): IBuffers| null {
             gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
             const textureCoordinates = [
                 0.0, 0.0, 
-                1.0, 0.0,
-                0.0, 1.0, 
-                1.0, 1.0
+                40.0, 0.0,
+                0.0, 25.0, 
+                40.0, 25.0
             ];
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
             const foregroundColor = [];
