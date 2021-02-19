@@ -1,19 +1,19 @@
+import { CharacterModeRenderTarget } from "./character-mode-render-target";
 import { CharacterModeShaders } from "./character-mode-shaders";
 import { ColorPalette } from "./color-palette";
 import { DataTexture } from "./data-texture";
-import { IProgramInfo } from "./i-program-info";
 
 export class Renderer {
     private gl: WebGLRenderingContext;
-    private programInfo: IProgramInfo;
-    private positionBuffer: WebGLBuffer;
+    private program: WebGLProgram;
+    private characterTarget: CharacterModeRenderTarget;
     private characterShaders: CharacterModeShaders;
     private characterRom: DataTexture;
 
-    constructor (gl: WebGLRenderingContext, programInfo: IProgramInfo, positionBuffer: WebGLBuffer, characterShaders: CharacterModeShaders, characterRom: DataTexture) {
+    constructor (gl: WebGLRenderingContext, program: WebGLProgram, characterTarget: CharacterModeRenderTarget, characterShaders: CharacterModeShaders, characterRom: DataTexture) {
         this.gl = gl;
-        this.programInfo = programInfo;
-        this.positionBuffer = positionBuffer;
+        this.program = program;
+        this.characterTarget = characterTarget;
         this.characterShaders = characterShaders;
         this.characterRom = characterRom;
     }
@@ -27,31 +27,10 @@ export class Renderer {
         gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
         // Clear the canvas before we start drawing on it.
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        // Tell WebGL how to pull out the positions from the position
-        // buffer into the vertexPosition attribute.
-        {
-            const numComponents = 2;  // pull out 2 values per iteration
-            const type = gl.FLOAT;    // the data in the buffer is 32bit floats
-            const normalize = false;  // don't normalize
-            const stride = 0;         // how many bytes to get from one set of values to the next
-                                      // 0 = use type and numComponents above
-            const offset = 0;         // how many bytes inside the buffer to start from
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
-            gl.vertexAttribPointer(
-                this.programInfo.attribLocations.vertexPosition,
-                numComponents,
-                type,
-                normalize,
-                stride,
-                offset
-            );
-            gl.enableVertexAttribArray(
-                this.programInfo.attribLocations.vertexPosition
-            );
-        }
-        this.characterRom.enable(this.programInfo.program);
+        this.characterTarget.uploadPositions();
+        this.characterRom.enable(this.program);
         // Tell WebGL to use our program when drawing
-        gl.useProgram(this.programInfo.program);
+        gl.useProgram(this.program);
         this.characterRom.activate(gl.TEXTURE0);
         this.characterShaders.upload();
         {
