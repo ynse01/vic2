@@ -210,7 +210,7 @@ function main() {
                     }
                 };
                 // Load the texture
-                const characterRom = new DataTexture(gl, 'media/characters-c64.bin');
+                const characterRom = new DataTexture(gl, 'media/characters-c64.bin', 'aCharacterRomCoord');
                 if (characterRom.texture != null) {
                     // Here's where we call the routine that builds all the
                     // objects we'll be drawing.

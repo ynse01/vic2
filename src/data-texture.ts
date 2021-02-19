@@ -1,13 +1,19 @@
 
+/**
+ * This class encapsulates a Texture and Coordinate buffer.
+ * This can be used to use arbitrary data in shader programs.
+ */
 export class DataTexture {
     private _gl: WebGLRenderingContext;
     private _url: string;
+    private _attributeName: string;
     private _texture: WebGLTexture | null;
     private _buffer: WebGLBuffer | null;
 
-    constructor(gl: WebGLRenderingContext, url: string) {
+    constructor(gl: WebGLRenderingContext, url: string, attributeName: string) {
         this._gl = gl;
         this._url = url;
+        this._attributeName = attributeName;
         this._texture = null;
         this._buffer = null;
     }
@@ -74,8 +80,9 @@ export class DataTexture {
         return result;
     }
 
-    public enable(attribLocation: number): void {
+    public enable(shaderProgram: WebGLProgram): void {
         const gl = this._gl;
+        const attribLocation = gl.getAttribLocation(shaderProgram, 'aCharacterRomCoord');
         // Tell WebGL how to pull out the texture coordinates from
         // the texture coordinate buffer into the textureCoord attribute.
         const numComponents = 2;

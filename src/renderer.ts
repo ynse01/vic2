@@ -47,9 +47,7 @@ export class Renderer {
                 this.programInfo.attribLocations.vertexPosition
             );
         }
-        this.characterRom.enable(
-            this.programInfo.attribLocations.characterRomCoord
-        );
+        this.characterRom.enable(this.programInfo.program);
         // Tell WebGL to use our program when drawing
         gl.useProgram(this.programInfo.program);
         this.characterRom.activate(gl.TEXTURE0);
