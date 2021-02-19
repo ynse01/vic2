@@ -1,18 +1,20 @@
+import { CharacterModeShaders } from "./character-mode-shaders";
 import { ColorPalette } from "./color-palette";
 import { DataTexture } from "./data-texture";
-import { IBuffers } from "./i-buffers";
 import { IProgramInfo } from "./i-program-info";
 
 export class Renderer {
     private gl: WebGLRenderingContext;
     private programInfo: IProgramInfo;
-    private buffers: IBuffers;
+    private positionBuffer: WebGLBuffer;
+    private characterShaders: CharacterModeShaders;
     private characterRom: DataTexture;
 
-    constructor (gl: WebGLRenderingContext, programInfo: IProgramInfo, buffers: IBuffers, characterRom: DataTexture) {
+    constructor (gl: WebGLRenderingContext, programInfo: IProgramInfo, positionBuffer: WebGLBuffer, characterShaders: CharacterModeShaders, characterRom: DataTexture) {
         this.gl = gl;
         this.programInfo = programInfo;
-        this.buffers = buffers;
+        this.positionBuffer = positionBuffer;
+        this.characterShaders = characterShaders;
         this.characterRom = characterRom;
     }
 
@@ -34,7 +36,7 @@ export class Renderer {
             const stride = 0;         // how many bytes to get from one set of values to the next
                                       // 0 = use type and numComponents above
             const offset = 0;         // how many bytes inside the buffer to start from
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.position);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
             gl.vertexAttribPointer(
                 this.programInfo.attribLocations.vertexPosition,
                 numComponents,
@@ -51,9 +53,7 @@ export class Renderer {
         // Tell WebGL to use our program when drawing
         gl.useProgram(this.programInfo.program);
         this.characterRom.activate(gl.TEXTURE0);
-        gl.uniform1i(this.programInfo.uniformLocations.sampler, 0);
-        gl.uniform3fv(this.programInfo.uniformLocations.foregroundColor, this.buffers.foregroundColor);
-        gl.uniform3fv(this.programInfo.uniformLocations.backgroundColor, this.buffers.backgroundColor);
+        this.characterShaders.upload();
         {
             const offset = 0;
             const vertexCount = 4;
