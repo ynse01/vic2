@@ -1,5 +1,5 @@
 import { ColorPalette } from "./color-palette";
-import { DataLoader } from "./data-loader";
+import { DataTexture } from "./data-texture";
 import { IBuffers } from "./i-buffers";
 import { IProgramInfo } from "./i-program-info";
 import { Renderer } from "./renderer";
@@ -138,7 +138,7 @@ function loadShader(gl: WebGLRenderingContext, type: number, source: string): We
     return null;
 }
 
-function initBuffers(gl: WebGLRenderingContext): IBuffers| null {
+function initBuffers(gl: WebGLRenderingContext, characterRom: DataTexture): IBuffers| null {
     // Create a buffer for the square's positions.
     const positionBuffer = gl.createBuffer();
     if (positionBuffer != null) {
@@ -158,17 +158,13 @@ function initBuffers(gl: WebGLRenderingContext): IBuffers| null {
             new Float32Array(positions),
             gl.STATIC_DRAW
         );
-        // Load the texture coordinates.
-        const characterRomCoordBuffer = gl.createBuffer();
-        if (characterRomCoordBuffer != null) {
-            gl.bindBuffer(gl.ARRAY_BUFFER, characterRomCoordBuffer);
-            const characterRomCoordinates = [
-                0.0, 0.0, 
-                40.0, 0.0,
-                0.0, 25.0, 
-                40.0, 25.0
-            ];
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(characterRomCoordinates), gl.STATIC_DRAW);
+        const characterRomCoordinates = [
+            0.0, 0.0, 
+            40.0, 0.0,
+            0.0, 25.0, 
+            40.0, 25.0
+        ];
+        if (characterRom.upload(characterRomCoordinates)) {
             const foregroundColor = [];
             foregroundColor.push(ColorPalette.lightBlue[0] / 256);
             foregroundColor.push(ColorPalette.lightBlue[1] / 256);
@@ -180,8 +176,7 @@ function initBuffers(gl: WebGLRenderingContext): IBuffers| null {
             return {
                 position: positionBuffer,
                 foregroundColor: foregroundColor,
-                backgroundColor: backgroundColor,
-                characterRomCoord: characterRomCoordBuffer
+                backgroundColor: backgroundColor
             };
         }
     }
@@ -215,14 +210,14 @@ function main() {
                     }
                 };
                 // Load the texture
-                const loader = new DataLoader(gl, 'media/characters-c64.bin');
-                if (loader.texture != null) {
+                const characterRom = new DataTexture(gl, 'media/characters-c64.bin');
+                if (characterRom.texture != null) {
                     // Here's where we call the routine that builds all the
                     // objects we'll be drawing.
-                    const buffers = initBuffers(gl);
+                    const buffers = initBuffers(gl, characterRom);
                     if (buffers != null) {
                         // Draw the scene
-                        const renderer = new Renderer(gl, programInfo, buffers, loader.texture);
+                        const renderer = new Renderer(gl, programInfo, buffers, characterRom);
                         renderer.renderLoop();
                     }
                 }

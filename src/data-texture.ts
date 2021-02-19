@@ -1,18 +1,24 @@
 
-export class DataLoader {
-    private gl: WebGLRenderingContext;
-    private url: string;
+export class DataTexture {
+    private _gl: WebGLRenderingContext;
+    private _url: string;
     private _texture: WebGLTexture | null;
+    private _buffer: WebGLBuffer | null;
 
     constructor(gl: WebGLRenderingContext, url: string) {
-        this.gl = gl;
-        this.url = url;
+        this._gl = gl;
+        this._url = url;
         this._texture = null;
+        this._buffer = null;
+    }
+
+    public get isReady(): boolean {
+        return this.texture != null;
     }
 
     public get texture(): WebGLTexture | null {
-        if (this._texture == undefined) {
-            const gl = this.gl;
+        if (this._texture == null) {
+            const gl = this._gl;
             const texture = gl.createTexture();
             if (texture != null) {
                 this._texture = texture;
@@ -31,7 +37,7 @@ export class DataLoader {
                     1, 1, 0, srcFormat, srcType, pixel);
 
                 const request = new XMLHttpRequest();
-                request.open("GET", this.url, true);
+                request.open("GET", this._url, true);
                 request.responseType = "arraybuffer";
 
                 request.onload = () => {
@@ -52,5 +58,45 @@ export class DataLoader {
             }
         }
         return this._texture;
+    }
+
+    public upload(data: number[]): boolean {
+        let result = false;
+        const gl = this._gl;
+        // Load the texture coordinates.
+        const buffer = gl.createBuffer();
+        if (buffer != null) {
+            this._buffer = buffer;
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
+            result = true;
+        }
+        return result;
+    }
+
+    public enable(attribLocation: number): void {
+        const gl = this._gl;
+        // Tell WebGL how to pull out the texture coordinates from
+        // the texture coordinate buffer into the textureCoord attribute.
+        const numComponents = 2;
+        const type = gl.FLOAT;
+        const normalize = false;
+        const stride = 0;
+        const offset = 0;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
+        gl.vertexAttribPointer(
+            attribLocation,
+            numComponents,
+            type,
+            normalize,
+            stride,
+            offset);
+        gl.enableVertexAttribArray(attribLocation);
+    }
+
+    public activate(index: number): void {
+        const gl = this._gl;
+        gl.activeTexture(index);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
     }
 }

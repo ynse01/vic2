@@ -1,4 +1,5 @@
 import { ColorPalette } from "./color-palette";
+import { DataTexture } from "./data-texture";
 import { IBuffers } from "./i-buffers";
 import { IProgramInfo } from "./i-program-info";
 
@@ -6,13 +7,13 @@ export class Renderer {
     private gl: WebGLRenderingContext;
     private programInfo: IProgramInfo;
     private buffers: IBuffers;
-    private texture: WebGLTexture;
+    private characterRom: DataTexture;
 
-    constructor (gl: WebGLRenderingContext, programInfo: IProgramInfo, buffers: IBuffers, texture: WebGLTexture) {
+    constructor (gl: WebGLRenderingContext, programInfo: IProgramInfo, buffers: IBuffers, characterRom: DataTexture) {
         this.gl = gl;
         this.programInfo = programInfo;
         this.buffers = buffers;
-        this.texture = texture;
+        this.characterRom = characterRom;
     }
 
     public renderLoop(): void {
@@ -46,29 +47,12 @@ export class Renderer {
                 this.programInfo.attribLocations.vertexPosition
             );
         }
-        // Tell WebGL how to pull out the texture coordinates from
-        // the texture coordinate buffer into the textureCoord attribute.
-        {
-            const numComponents = 2;
-            const type = gl.FLOAT;
-            const normalize = false;
-            const stride = 0;
-            const offset = 0;
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.characterRomCoord);
-            gl.vertexAttribPointer(
-                this.programInfo.attribLocations.characterRomCoord,
-                numComponents,
-                type,
-                normalize,
-                stride,
-                offset);
-            gl.enableVertexAttribArray(
-                this.programInfo.attribLocations.characterRomCoord);
-        }
+        this.characterRom.enable(
+            this.programInfo.attribLocations.characterRomCoord
+        );
         // Tell WebGL to use our program when drawing
         gl.useProgram(this.programInfo.program);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        this.characterRom.activate(gl.TEXTURE0);
         gl.uniform1i(this.programInfo.uniformLocations.sampler, 0);
         gl.uniform3fv(this.programInfo.uniformLocations.foregroundColor, this.buffers.foregroundColor);
         gl.uniform3fv(this.programInfo.uniformLocations.backgroundColor, this.buffers.backgroundColor);
