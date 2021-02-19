@@ -47,68 +47,10 @@ export class DataLoader {
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                    this._createTable(byteArray);
                 };
                 request.send(null);
             }
         }
         return this._texture;
-    }
-
-    private _createTable(byteArray: Uint8Array): void {
-        const numChars = byteArray.length / 8;
-        for(let i = 0; i < numChars; i++) {
-            for(let j = 0; j < 8; j++) {
-                const byte = byteArray[(i * 8) + j];
-                let str = "";
-                if (byte >= 128) {
-                    str += "O";
-                } else {
-                    str += ".";
-                }
-                if ((byte % 128) >= 64) {
-                    str += "O";
-                } else {
-                    str += ".";
-                }
-                if ((byte % 64) >= 32) {
-                    str += "O";
-                } else {
-                    str += ".";
-                }
-                if ((byte % 32) >= 16) {
-                    str += "O";
-                } else {
-                    str += ".";
-                }
-                if ((byte % 16) >= 8) {
-                    str += "O";
-                } else {
-                    str += ".";
-                }
-                if ((byte % 8) >= 4) {
-                    str += "O";
-                } else {
-                    str += ".";
-                }
-                if ((byte % 4) >= 2) {
-                    str += "O";
-                } else {
-                    str += ".";
-                }
-                if ((byte % 2) >= 1) {
-                    str += "O";
-                } else {
-                    str += ".";
-                }
-                str += " ";
-                str += byte.toString(16);
-                console.log(str);
-            }
-            if (i > 40) {
-                return;
-            }
-            console.log();
-        }
     }
 }
