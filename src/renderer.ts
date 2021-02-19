@@ -54,16 +54,16 @@ export class Renderer {
             const normalize = false;
             const stride = 0;
             const offset = 0;
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.textureCoord);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.characterRomCoord);
             gl.vertexAttribPointer(
-                this.programInfo.attribLocations.textureCoord,
+                this.programInfo.attribLocations.characterRomCoord,
                 numComponents,
                 type,
                 normalize,
                 stride,
                 offset);
             gl.enableVertexAttribArray(
-                this.programInfo.attribLocations.textureCoord);
+                this.programInfo.attribLocations.characterRomCoord);
         }
         // Tell WebGL to use our program when drawing
         gl.useProgram(this.programInfo.program);

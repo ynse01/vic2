@@ -2,7 +2,7 @@ export interface IProgramInfo {
     program: WebGLShader,
     attribLocations: {
         vertexPosition: number,
-        textureCoord: number
+        characterRomCoord: number
     },
     uniformLocations: {
         sampler: WebGLUniformLocation,

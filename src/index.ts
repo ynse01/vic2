@@ -7,13 +7,13 @@ import { Renderer } from "./renderer";
 // Vertex shader
 const vsSource = `
     attribute vec4 aVertexPosition;
-    attribute vec2 aTextureCoord;
+    attribute vec2 aCharacterRomCoord;
 
-    varying highp vec2 vTextureCoord;
+    varying highp vec2 vCharacterRomCoord;
 
     void main() {
         gl_Position = aVertexPosition;
-        vTextureCoord = aTextureCoord;
+        vCharacterRomCoord = aCharacterRomCoord;
     }
 `;
 
@@ -21,15 +21,15 @@ const vsSource = `
 const psSource = `
     precision highp float;
 
-    varying highp vec2 vTextureCoord;
+    varying highp vec2 vCharacterRomCoord;
 
     uniform sampler2D uSampler;
     uniform lowp vec3 uBackgroundColor;
     uniform lowp vec3 uForegroundColor;
         
     void main() {
-        vec2 charIndex = floor(vTextureCoord);
-        vec2 pixelIndex = mod(vTextureCoord, 1.0) * 8.0;
+        vec2 charIndex = floor(vCharacterRomCoord);
+        vec2 pixelIndex = mod(vCharacterRomCoord, 1.0) * 8.0;
         // Char texture has single character on 1 row (8 bytes). And 256 rows in total.
         vec2 charTextureCoord = vec2((pixelIndex.y + 0.5) / 8.0, (charIndex.x + 0.5) / 256.0);
         vec4 textureColor = texture2D(uSampler, charTextureCoord);
@@ -159,16 +159,16 @@ function initBuffers(gl: WebGLRenderingContext): IBuffers| null {
             gl.STATIC_DRAW
         );
         // Load the texture coordinates.
-        const textureCoordBuffer = gl.createBuffer();
-        if (textureCoordBuffer != null) {
-            gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
-            const textureCoordinates = [
+        const characterRomCoordBuffer = gl.createBuffer();
+        if (characterRomCoordBuffer != null) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, characterRomCoordBuffer);
+            const characterRomCoordinates = [
                 0.0, 0.0, 
                 40.0, 0.0,
                 0.0, 25.0, 
                 40.0, 25.0
             ];
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(characterRomCoordinates), gl.STATIC_DRAW);
             const foregroundColor = [];
             foregroundColor.push(ColorPalette.lightBlue[0] / 256);
             foregroundColor.push(ColorPalette.lightBlue[1] / 256);
@@ -181,7 +181,7 @@ function initBuffers(gl: WebGLRenderingContext): IBuffers| null {
                 position: positionBuffer,
                 foregroundColor: foregroundColor,
                 backgroundColor: backgroundColor,
-                textureCoord: textureCoordBuffer
+                characterRomCoord: characterRomCoordBuffer
             };
         }
     }
@@ -206,7 +206,7 @@ function main() {
                     program: shaderProgram,
                     attribLocations: {
                         vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-                        textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord')
+                        characterRomCoord: gl.getAttribLocation(shaderProgram, 'aCharacterRomCoord')
                     },
                     uniformLocations: {
                         foregroundColor: foregroundColor,
