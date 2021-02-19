@@ -200,8 +200,7 @@ function main() {
                 const programInfo: IProgramInfo = {
                     program: shaderProgram,
                     attribLocations: {
-                        vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-                        characterRomCoord: gl.getAttribLocation(shaderProgram, 'aCharacterRomCoord')
+                        vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition')
                     },
                     uniformLocations: {
                         foregroundColor: foregroundColor,
