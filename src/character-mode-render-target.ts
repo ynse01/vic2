@@ -1,16 +1,19 @@
 import { CharacterModeShaders } from "./character-mode-shaders";
 import { DataTexture } from "./data-texture";
 import { Renderer } from "./renderer";
+import { TextBuffer } from "./text-buffer";
 
 export class CharacterModeRenderTarget {
     private _gl: WebGLRenderingContext;
+    private _text: TextBuffer;
     private _foreColor: number[];
     private _backColor: number[];
     private _positionBuffer: WebGLBuffer | null;
     private _vertexPosition = -1;
 
-    constructor(gl: WebGLRenderingContext, foregroundColor: number[], backgroundColor: number[]) {
+    constructor(gl: WebGLRenderingContext, text: TextBuffer, foregroundColor: number[], backgroundColor: number[]) {
         this._gl = gl;
+        this._text = text;
         this._foreColor = [];
         this._foreColor[0] = foregroundColor[0] / 255.0;
         this._foreColor[1] = foregroundColor[1] / 255.0;
@@ -28,12 +31,13 @@ export class CharacterModeRenderTarget {
         const shaderProgram = characterShaders.program;
         if (shaderProgram != null) {
             this._vertexPosition = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
-            // Load the texture
-            const characterRom = new DataTexture(gl, 'media/characters-c64.bin', 'aCharacterRomCoord');
-            if (characterRom.texture != null) {
+            // Load the textures
+            const characterRom = new DataTexture(gl, 'media/characters-c64.bin', 'aCharacterRomCoord', 8, 256);
+            const textTexture = new DataTexture(gl, this._text.data, 'aTextCoord', 40, 25);
+            if (characterRom.texture != null && textTexture.texture) {
                 // Here's where we call the routine that builds all the
                 // objects we'll be drawing.
-                this.initBuffers(gl, characterShaders, characterRom);
+                this.initBuffers(gl, characterShaders, characterRom, textTexture);
                 if (this._positionBuffer != null) {
                     // Draw the scene
                     const renderer = new Renderer(gl, shaderProgram, this, characterShaders, characterRom);
@@ -65,7 +69,12 @@ export class CharacterModeRenderTarget {
         gl.enableVertexAttribArray(this._vertexPosition);
     }
 
-    private initBuffers(gl: WebGLRenderingContext, characterModeShaders: CharacterModeShaders, characterRom: DataTexture): void {
+    private initBuffers(
+        gl: WebGLRenderingContext,
+        characterModeShaders: CharacterModeShaders,
+        characterRom: DataTexture,
+        textTexture: DataTexture
+    ): void {
         // Create a buffer for the square's positions.
         const positionBuffer = gl.createBuffer();
         if (positionBuffer != null) {
@@ -85,16 +94,24 @@ export class CharacterModeRenderTarget {
                 new Float32Array(positions),
                 gl.STATIC_DRAW
             );
-            const characterRomCoordinates = [
+            const textCoordinates = [
                 0.0, 0.0, 
                 40.0, 0.0,
                 0.0, 25.0, 
                 40.0, 25.0
             ];
-            if (characterRom.upload(characterRomCoordinates)) {
-                characterModeShaders.setForegroundColor(this._foreColor);
-                characterModeShaders.setBackgroundColor(this._backColor);
-                this._positionBuffer = positionBuffer;
+            if (textTexture.upload(textCoordinates)) {
+                const characterRomCoordinates = [
+                    0.0, 0.0, 
+                    40.0, 0.0,
+                    0.0, 25.0, 
+                    40.0, 25.0
+                ];
+                if (characterRom.upload(characterRomCoordinates)) {
+                    characterModeShaders.setForegroundColor(this._foreColor);
+                    characterModeShaders.setBackgroundColor(this._backColor);
+                    this._positionBuffer = positionBuffer;
+                }
             }
         }
     }
