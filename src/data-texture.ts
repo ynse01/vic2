@@ -81,22 +81,24 @@ export class DataTexture {
     public enable(shaderProgram: WebGLProgram): void {
         const gl = this._gl;
         const attribLocation = gl.getAttribLocation(shaderProgram, this._attributeName);
-        // Tell WebGL how to pull out the texture coordinates from
-        // the texture coordinate buffer into the textureCoord attribute.
-        const numComponents = 2;
-        const type = gl.FLOAT;
-        const normalize = false;
-        const stride = 0;
-        const offset = 0;
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
-        gl.vertexAttribPointer(
-            attribLocation,
-            numComponents,
-            type,
-            normalize,
-            stride,
-            offset);
-        gl.enableVertexAttribArray(attribLocation);
+        if (attribLocation != -1) {
+            // Tell WebGL how to pull out the texture coordinates from
+            // the texture coordinate buffer into the textureCoord attribute.
+            const numComponents = 2;
+            const type = gl.FLOAT;
+            const normalize = false;
+            const stride = 0;
+            const offset = 0;
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
+            gl.vertexAttribPointer(
+                attribLocation,
+                numComponents,
+                type,
+                normalize,
+                stride,
+                offset);
+            gl.enableVertexAttribArray(attribLocation);
+        }
     }
 
     public activate(index: number): void {
