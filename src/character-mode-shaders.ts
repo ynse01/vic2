@@ -28,11 +28,14 @@ export class CharacterModeShaders {
             
         void main() {
             vec2 charIndex = floor(vCharacterRomCoord);
+            // Text texture has 25 rows of 40 pixels, containing the character code.
+            vec4 textColor = texture2D(uTextSampler, charIndex);
             vec2 pixelIndex = mod(vCharacterRomCoord, 1.0) * 8.0;
             // Char texture has single character on 1 row (8 bytes). And 256 rows in total.
-            vec2 charTextureCoord = vec2((pixelIndex.y + 0.5) / 8.0, (charIndex.x + 0.5) / 256.0);
-            vec4 textureColor = texture2D(uCharSampler, charTextureCoord);
-            float byte = textureColor.r * 256.0;
+            // This means the character code is equal to the row index.
+            vec2 charTextureCoord = vec2((pixelIndex.y + 0.5) / 8.0, textColor.r);
+            vec4 charColor = texture2D(uCharSampler, charTextureCoord);
+            float byte = charColor.r * 256.0;
             float bit = floor(pixelIndex.x);
             if (bit == 7.0) {
                 if (mod(byte, 2.0) >= 1.0) {
