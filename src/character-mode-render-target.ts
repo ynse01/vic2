@@ -45,7 +45,7 @@ export class CharacterModeRenderTarget {
             this._vertexPosition = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
             // Load the textures
             this._characterRom = new DataTexture(gl, 'media/characters-c64.bin', 'aCharacterRomCoord', 8, 256);
-            this._textTexture = new DataTexture(gl, this._text.data, 'aTextCoord', 40, 25);
+            this._textTexture = new DataTexture(gl, this._text.data, null, 40, 25);
             if (this._characterRom.texture != null && this._textTexture.texture) {
                 // Here's where we call the routine that builds all the
                 // objects we'll be drawing.

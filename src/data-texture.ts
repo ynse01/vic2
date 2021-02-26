@@ -9,14 +9,14 @@ export class DataTexture {
     private _data: number[] | null;
     private _width: number;
     private _height: number;
-    private _attributeName: string;
+    private _attributeName: string | null;
     private _texture: WebGLTexture | null;
     private _buffer: WebGLBuffer | null;
 
     constructor(
         gl: WebGLRenderingContext,
         data: string | number[],
-        attributeName: string,
+        attributeName: string | null,
         width: number,
         height: number
     ) {
@@ -79,25 +79,27 @@ export class DataTexture {
     }
 
     public enable(shaderProgram: WebGLProgram): void {
-        const gl = this._gl;
-        const attribLocation = gl.getAttribLocation(shaderProgram, this._attributeName);
-        if (attribLocation != -1) {
-            // Tell WebGL how to pull out the texture coordinates from
-            // the texture coordinate buffer into the textureCoord attribute.
-            const numComponents = 2;
-            const type = gl.FLOAT;
-            const normalize = false;
-            const stride = 0;
-            const offset = 0;
-            gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
-            gl.vertexAttribPointer(
-                attribLocation,
-                numComponents,
-                type,
-                normalize,
-                stride,
-                offset);
-            gl.enableVertexAttribArray(attribLocation);
+        if (this._attributeName != null) {
+            const gl = this._gl;
+            const attribLocation = gl.getAttribLocation(shaderProgram, this._attributeName);
+            if (attribLocation != -1) {
+                // Tell WebGL how to pull out the texture coordinates from
+                // the texture coordinate buffer into the textureCoord attribute.
+                const numComponents = 2;
+                const type = gl.FLOAT;
+                const normalize = false;
+                const stride = 0;
+                const offset = 0;
+                gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
+                gl.vertexAttribPointer(
+                    attribLocation,
+                    numComponents,
+                    type,
+                    normalize,
+                    stride,
+                    offset);
+                gl.enableVertexAttribArray(attribLocation);
+            }
         }
     }
 
