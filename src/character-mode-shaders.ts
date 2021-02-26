@@ -27,9 +27,10 @@ export class CharacterModeShaders {
         uniform lowp vec3 uForegroundColor;
             
         void main() {
-            vec2 charIndex = floor(vCharacterRomCoord);
-            // Text texture has 25 rows of 40 pixels, containing the character code.
-            vec4 textColor = texture2D(uTextSampler, charIndex);
+            vec2 textIndex = floor(vCharacterRomCoord);
+            vec2 textCoord = textIndex / vec2(40, 25);
+            // Text texture has 25 rows of 40 pixels, containing the character code as pixel value.
+            vec4 textColor = texture2D(uTextSampler, textCoord);
             vec2 pixelIndex = mod(vCharacterRomCoord, 1.0) * 8.0;
             // Char texture has single character on 1 row (8 bytes). And 256 rows in total.
             // This means the character code is equal to the row index.
@@ -127,7 +128,7 @@ export class CharacterModeShaders {
     public upload(): void {
         const gl = this._gl;
         gl.uniform1i(this._charSamplerLocation, 0);
-        gl.uniform1i(this._textSamplerLocation, 0);
+        gl.uniform1i(this._textSamplerLocation, 1);
         gl.uniform3fv(this._foreColorLocation, this._foreColor);
         gl.uniform3fv(this._backColorLocation, this._backColor);
     }

@@ -2,7 +2,8 @@
 export class CharacterCodes {
 
     public static getCodeAt(txt: string, index: number): number {
-        const jsCode = txt.charCodeAt(index);
+        const lower = txt.toLowerCase();
+        const jsCode = lower.charCodeAt(index);
         return jsCode;
     }
 
