@@ -9,6 +9,7 @@ function main() {
         if (gl != null) {
             const screenBuffer = new TextBuffer();
             screenBuffer.writeWelcomeMessage();
+            screenBuffer.debug();
             const characterMode = new CharacterModeRenderTarget(gl, screenBuffer, ColorPalette.lightBlue, ColorPalette.blue);
             characterMode.start();
         } else {
