@@ -21,6 +21,7 @@ export class CharacterModeShaders {
         varying highp vec2 vCharacterRomCoord;
 
         uniform sampler2D uCharSampler;
+        uniform sampler2D uTextSampler;
 
         uniform lowp vec3 uBackgroundColor;
         uniform lowp vec3 uForegroundColor;
@@ -99,6 +100,7 @@ export class CharacterModeShaders {
     private _foreColorLocation: WebGLUniformLocation | null = null;
     private _backColorLocation: WebGLUniformLocation | null = null;
     private _charSamplerLocation: WebGLUniformLocation | null = null;
+    private _textSamplerLocation: WebGLUniformLocation | null = null;
 
     constructor(gl: WebGLRenderingContext) {
         this._gl = gl;
@@ -114,6 +116,7 @@ export class CharacterModeShaders {
             this._foreColorLocation = gl.getUniformLocation(program, 'uForegroundColor');
             this._backColorLocation = gl.getUniformLocation(program, 'uBackgroundColor');
             this._charSamplerLocation = gl.getUniformLocation(program, 'uCharSampler');
+            this._textSamplerLocation = gl.getUniformLocation(program, 'uTextSampler');
         }
         return program;
     }
@@ -121,6 +124,7 @@ export class CharacterModeShaders {
     public upload(): void {
         const gl = this._gl;
         gl.uniform1i(this._charSamplerLocation, 0);
+        gl.uniform1i(this._textSamplerLocation, 0);
         gl.uniform3fv(this._foreColorLocation, this._foreColor);
         gl.uniform3fv(this._backColorLocation, this._backColor);
     }
