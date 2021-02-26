@@ -20,7 +20,8 @@ export class CharacterModeShaders {
 
         varying highp vec2 vCharacterRomCoord;
 
-        uniform sampler2D uSampler;
+        uniform sampler2D uCharSampler;
+
         uniform lowp vec3 uBackgroundColor;
         uniform lowp vec3 uForegroundColor;
             
@@ -29,7 +30,7 @@ export class CharacterModeShaders {
             vec2 pixelIndex = mod(vCharacterRomCoord, 1.0) * 8.0;
             // Char texture has single character on 1 row (8 bytes). And 256 rows in total.
             vec2 charTextureCoord = vec2((pixelIndex.y + 0.5) / 8.0, (charIndex.x + 0.5) / 256.0);
-            vec4 textureColor = texture2D(uSampler, charTextureCoord);
+            vec4 textureColor = texture2D(uCharSampler, charTextureCoord);
             float byte = textureColor.r * 256.0;
             float bit = floor(pixelIndex.x);
             if (bit == 7.0) {
@@ -97,7 +98,7 @@ export class CharacterModeShaders {
     private _backColor: number[];
     private _foreColorLocation: WebGLUniformLocation | null = null;
     private _backColorLocation: WebGLUniformLocation | null = null;
-    private _samplerLocation: WebGLUniformLocation | null = null;
+    private _charSamplerLocation: WebGLUniformLocation | null = null;
 
     constructor(gl: WebGLRenderingContext) {
         this._gl = gl;
@@ -108,18 +109,18 @@ export class CharacterModeShaders {
 
     public get program(): WebGLProgram | null {
         const program = this.shaders.program;
-        if (program != null && this._samplerLocation == null) {
+        if (program != null && this._charSamplerLocation == null) {
             const gl = this._gl;
             this._foreColorLocation = gl.getUniformLocation(program, 'uForegroundColor');
             this._backColorLocation = gl.getUniformLocation(program, 'uBackgroundColor');
-            this._samplerLocation = gl.getUniformLocation(program, 'uSampler');
+            this._charSamplerLocation = gl.getUniformLocation(program, 'uCharSampler');
         }
         return program;
     }
 
     public upload(): void {
         const gl = this._gl;
-        gl.uniform1i(this._samplerLocation, 0);
+        gl.uniform1i(this._charSamplerLocation, 0);
         gl.uniform3fv(this._foreColorLocation, this._foreColor);
         gl.uniform3fv(this._backColorLocation, this._backColor);
     }
